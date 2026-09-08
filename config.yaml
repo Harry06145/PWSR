@@ -1,0 +1,157 @@
+# ============================================================================
+# PWSR: Physical-Aware Parallel Dual-Domain Network for Robust NIR-II
+# Fluorescence Super-Resolution
+# ============================================================================
+
+# ---------- Physical PSF parameters ----------
+psf:
+  # Wavelength range (nm)
+  lambda_min: 1500.0
+  lambda_max: 1700.0
+
+  # Numerical aperture range (macroscopic WFI objective in the paper)
+  NA_min: 0.03
+  NA_max: 0.15
+
+  # Quantisation steps of the NA / lambda grids (conditions are sampled
+  # uniformly from these discrete grids during training)
+  na_step: 0.01
+  lam_step: 1
+
+  # Random kernel shaping mode: "gaussian" (smooth main lobe, default)
+  # or "airy" (real Airy pattern with diffraction rings)
+  psf_mode: "gaussian"
+
+  # Single calibration constant: sigma_px = alpha * lambda / NA.
+  # With alpha ~ 9.85e-5 the effective PSF sigma stays in [1.0, 5.7] px
+  # for lambda in [1500, 1700] and NA in [0.03, 0.15], which fits a 32x32
+  # kernel. When adapting to other optical systems, scale the ranges so
+  # that sigma_px remains well inside the kernel.
+  alpha: 9.846153846153846e-05
+
+  # Guided PSF kernel size (32x32)
+  kernel_size: 32
+
+# ---------- Degradation pipeline ----------
+degradation:
+  # Number of PSF conditions sampled per image (k = 3 enables the
+  # multi-view consistency loss; set to 1 to disable it)
+  num_conditions: 3
+
+  # Poisson (photon shot) noise scale range [min, max]
+  poisson_scale_min: 0.0
+  poisson_scale_max: 0.03
+
+  # Gaussian (readout) noise sigma range [min, max]
+  gauss_sigma_min: 0.005
+  gauss_sigma_max: 0.02
+
+# ---------- Condition injection ----------
+condition:
+  # Physical conditions fed to the network: (lambda, NA)
+  input_dim: 2
+  # Dimension of the condition embedding produced by the MLP
+  cond_dim: 16
+  # MLP hidden dimensions
+  mlp_hidden: [32, 64]
+  # Injection method: "concat" (spatial tiling + channel concatenation)
+  method: "concat"
+
+# ---------- Model architecture ----------
+model:
+  type: "PWSR"
+  in_chans: 1          # grayscale input
+  upscale: 2           # 256 -> 512
+  dim: 40
+  wavelet: "haar"      # wavelet used by the wavelet branch
+  wavelet_blocks: 8    # residual blocks in the wavelet branch
+  block_num: 8
+  qk_dim: 36
+  mlp_dim: 96
+  heads: 4
+  patch_size: [16, 20, 24, 28, 16, 20, 24, 28]
+  n_iters: [5, 5, 5, 5, 5, 5, 5, 5]
+  num_tokens: [16, 32, 64, 128, 16, 32, 64, 128]
+  group_size: [256, 128, 64, 32, 256, 128, 64, 32]
+
+  # ---------- Ablation switches ----------
+  # use_wavelet: enable the wavelet branch (ON = wavelet + spatial)
+  # use_cata:    enable the spatial/CATA branch
+  use_wavelet: true
+  use_cata: true
+
+# ---------- Dataset ----------
+dataset:
+  # Path to the dataset root, which must contain train/ val/ test/
+  # subdirectories of ground-truth grayscale PNG images. Degradation is
+  # applied on the fly during training, so only GT images are needed.
+  dataroot: "./datasets/WFI_B"
+  # Ground-truth / low-resolution crop sizes
+  gt_size: 512
+  lq_size: 256
+  # Augmentation (training only)
+  use_hflip: true
+  use_rot: true
+
+# ---------- Test / validation ----------
+test:
+  # PSF mode: "random", "fixed", "reuse", or "direct"
+  #   random — sample PSF parameters from the configured ranges
+  #   fixed  — use the exact values in test.fixed
+  #   reuse  — load pre-generated LR images & conditions from reuse_dir
+  #            (fair comparison of different models on the same degradation)
+  #   direct — load GT/LR image pairs from user-specified directories
+  psf_mode: "random"
+
+  # When psf_mode == "reuse", point to a previous result directory that
+  # contains LR/ and metrics.csv (as produced by a first test.py run)
+  reuse_dir: ""
+
+  # Fixed PSF parameters (used when psf_mode == "fixed")
+  fixed:
+    lambda: 1500.0
+    NA: 0.09
+    poisson_scale: 0.01
+    gauss_sigma: 0.005
+
+# ---------- Training ----------
+train:
+  batch_size: 1       # images per GPU per step (each with k degraded views)
+  num_epochs: 400
+  val_freq: 1         # validate every N epochs
+
+  # Early stopping after N consecutive validation epochs without PSNR gain
+  early_stop: true
+  early_stop_patience: 20
+
+  # Optimizer
+  optim:
+    type: "Adam"
+    lr: 2.0e-4
+    weight_decay: 0.0
+    betas: [0.9, 0.99]
+
+  # Scheduler
+  scheduler:
+    type: "CosineAnnealingLR"
+    T_max: 400
+    eta_min: 1.0e-7
+
+  # Loss weights
+  loss:
+    l1_weight: 1.0
+    consistency_weight: 0.1   # multi-view consistency loss weight
+    wavelet_weight: 0.1       # wavelet-domain loss weight
+    lambda_ll: 0.01           # LL-subband weight (low frequencies down-weighted)
+
+# ---------- Logging & checkpointing ----------
+logging:
+  save_dir: "./checkpoints"
+  log_dir: "./logs"
+  save_freq: 1  # save a checkpoint every N epochs
+
+# ---------- Evaluation ----------
+metrics:
+  # Pixels cropped on each side before computing PSNR/SSIM
+  # (standard SR border-shave convention; 0 = no crop)
+  crop_border: 4

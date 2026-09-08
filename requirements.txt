@@ -1,0 +1,9 @@
+torch>=2.1
+numpy
+scipy
+opencv-python
+pyyaml
+tqdm
+ptwt
+einops
+scikit-image
