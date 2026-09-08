@@ -3,7 +3,7 @@
 Official PyTorch implementation of **PWSR**, a parallel dual-domain super-resolution framework for near-infrared second-window (NIR-II) fluorescence imaging.
 
 > **PWSR: Physical-Aware Parallel Dual-Domain Network for Robust NIR-II Fluorescence Super-Resolution**
-> Hao Li, Yifan Zhou, Menghan Guan, Jie Tian, Zhenhua Hu
+> Hao Li, Yuxi Deng, Ming Wang, Jie Tian, Zhenhua Hu
 > The code and algorithm are for non-comercial use only.
 > Copyright 2026, Institute of Automation, Chinese Academy of Sciences, Beijing, China.
 
@@ -93,6 +93,7 @@ python train.py --config config.yaml --resume checkpoints/epoch_40.pth
 Checkpoints and text logs are written to `checkpoints/` and `logs/` (configurable in `config.yaml`). The best validation model is stored as `checkpoints/best.pth`; early stopping is enabled by default.
 
 ### CheckPonits
+
 Checkpoint will be released after the paper is accepted.
 
 ## Testing
@@ -164,8 +165,7 @@ If you find this work useful, please cite:
 @article{li2026pwsr,
   title={PWSR: Physical-Aware Parallel Dual-Domain Network for
          Robust NIR-II Fluorescence Super-Resolution},
-  author={Li, Hao and Zhou, Yifan and Guan, Menghan and
-          Tian, Jie and Hu, Zhenhua},
+  author={Hao Li, Yuxi Deng, Ming Wang, Jie Tian, Zhenhua Hu},
   journal={Not Published},
   year={2026}
 }
