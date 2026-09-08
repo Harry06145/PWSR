@@ -92,15 +92,8 @@ python train.py --config config.yaml --resume checkpoints/epoch_40.pth
 
 Checkpoints and text logs are written to `checkpoints/` and `logs/` (configurable in `config.yaml`). The best validation model is stored as `checkpoints/best.pth`; early stopping is enabled by default.
 
-### Ablations
-
-| Variant | `use_wavelet` | `use_cata` | Description |
-|---------|:-----------:|:----------:|-------------|
-| Full PWSR | true | true | Dual-domain parallel (paper model) |
-| w/o wavelet | false | true | Spatial branch only |
-| w/o spatial | true | false | Wavelet branch only |
-
-Setting `degradation.num_conditions: 1` disables the multi-view consistency loss and trains a single-condition model.
+### CheckPonits
+Checkpoint will be released after the paper is accepted.
 
 ## Testing
 
