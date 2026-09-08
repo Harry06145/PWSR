@@ -3,7 +3,7 @@
 Official PyTorch implementation of **PWSR**, a parallel dual-domain super-resolution framework for near-infrared second-window (NIR-II) fluorescence imaging.
 
 > **PWSR: Physical-Aware Parallel Dual-Domain Network for Robust NIR-II Fluorescence Super-Resolution**
-> Hao Li, Yuxi Deng, Ming Wang, Jie Tian, Zhenhua Hu
+> Hao Li, Yuxi Deng, Ming Wang, Jie Tian, Zhenhua Hu.
 > The code and algorithm are for non-comercial use only.
 > Copyright 2026, Institute of Automation, Chinese Academy of Sciences, Beijing, China.
 
