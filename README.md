@@ -92,7 +92,7 @@ python train.py --config config.yaml --resume checkpoints/epoch_40.pth
 
 Checkpoints and text logs are written to `checkpoints/` and `logs/` (configurable in `config.yaml`). The best validation model is stored as `checkpoints/best.pth`; early stopping is enabled by default.
 
-### CheckPonits
+## CheckPonits
 
 Checkpoint will be released after the paper is accepted.
 
